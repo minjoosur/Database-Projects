@@ -229,7 +229,13 @@ class LeafNode extends BPlusNode {
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-      keys.remove(key);
+      int idx = 0;
+      for (; idx < keys.size(); idx++){
+          if (keys.get(idx).compareTo(key) == 0)
+              break;
+      }
+      keys.remove(idx);
+      rids.remove(idx);
       sync();
   }
 

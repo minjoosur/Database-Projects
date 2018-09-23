@@ -73,7 +73,6 @@ class InnerNode extends BPlusNode {
     int childIdx = numLessThanEqual(key,keys);
     BPlusNode child = getChild(childIdx);
     return child.get(key);
-
   }
 
   // See BPlusNode.getLeftmostLeaf.
@@ -82,14 +81,41 @@ class InnerNode extends BPlusNode {
     assert(children.size() > 0);
     BPlusNode child = getChild(0);
     return child.getLeftmostLeaf();
-
   }
 
   // See BPlusNode.put.
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+
+    int childIdx = numLessThanEqual(key, keys);
+    BPlusNode child = getChild(childIdx);
+    Optional<Pair<DataBox, Integer>> pairFromChild = child.put(key, rid);
+
+    //if not splitted, nothing to do
+    if (!pairFromChild.isPresent())
+      return Optional.empty();
+    //if splitted, copy the number
+    keys.add(childIdx,pairFromChild.get().getFirst());
+    children.add(childIdx+1,pairFromChild.get().getSecond());
+
+    //if this is full, split again but not full, just return
+    Optional<Pair<DataBox, Integer>> newPair = Optional.empty();
+    //if overflow
+    int numofKeys = keys.size();
+    if (numofKeys > 2 * metadata.getOrder()) {
+      int midIdx = keys.size() / 2;
+      List<DataBox> rightKeys = keys.subList(midIdx+1, numofKeys);
+      List<Integer> rightChildren = children.subList(midIdx+1, numofKeys+1);
+      InnerNode rightInnerNode = new InnerNode(metadata,rightKeys,rightChildren);
+
+      keys = keys.subList(0, midIdx);
+      children = children.subList(0, midIdx);
+
+      newPair = Optional.of(new Pair<>(keys.get(midIdx), rightInnerNode.getPage().getPageNum()));
+    }
+    sync();
+    return newPair;
   }
 
   // See BPlusNode.bulkLoad.
@@ -103,7 +129,10 @@ class InnerNode extends BPlusNode {
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    int childIdx = numLessThanEqual(key, keys);
+    BPlusNode child = getChild(childIdx);
+    child.remove(key);
+    sync();
   }
 
   // Helpers ///////////////////////////////////////////////////////////////////
