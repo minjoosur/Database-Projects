@@ -1,4 +1,4 @@
-B+ Trees
+## B+ Trees
 
 ## Overview
 In this assignment, you will implement persistent B+ trees in Java. In this
