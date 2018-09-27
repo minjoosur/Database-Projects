@@ -109,10 +109,11 @@ class InnerNode extends BPlusNode {
       List<Integer> rightChildren = children.subList(midIdx+1, numofKeys+1);
       InnerNode rightInnerNode = new InnerNode(metadata,rightKeys,rightChildren);
 
+      DataBox midKey = keys.get(midIdx);
       keys = keys.subList(0, midIdx);
-      children = children.subList(0, midIdx);
+      children = children.subList(0, midIdx+1);
 
-      newPair = Optional.of(new Pair<>(keys.get(midIdx), rightInnerNode.getPage().getPageNum()));
+      newPair = Optional.of(new Pair<>(midKey, rightInnerNode.getPage().getPageNum()));
     }
     sync();
     return newPair;

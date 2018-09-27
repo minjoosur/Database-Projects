@@ -168,9 +168,9 @@ class LeafNode extends BPlusNode {
           List<RecordId> newRids = rids.subList(midIdx, numofKeys);
           LeafNode newLeafNode = new LeafNode(metadata, newKeys, newRids, rightSibling);
 
-          keys = keys.subList(0, midIdx);
-          rids = rids.subList(0, midIdx);
-          rightSibling = Optional.of(newLeafNode.getPage().getPageNum());
+          this.keys = keys.subList(0, midIdx);
+          this.rids = rids.subList(0, midIdx);
+          this.rightSibling = Optional.of(newLeafNode.getPage().getPageNum());
 
           newPair = Optional.of(new Pair<>(newKeys.get(0), newLeafNode.getPage().getPageNum()));
       }
@@ -186,7 +186,7 @@ class LeafNode extends BPlusNode {
       int d = metadata.getOrder();
 
       //handling duplicated keys
-      while (data.hasNext() && ((float) keys.size()) <= fillFactor * 2 * d) {
+      while (data.hasNext() && (keys.size() <= Math.ceil(fillFactor * 2 * d))) {
           Pair<DataBox, RecordId> currPair = data.next();
           DataBox key = currPair.getFirst();
           RecordId rid = currPair.getSecond();
@@ -208,7 +208,7 @@ class LeafNode extends BPlusNode {
       Optional<Pair<DataBox, Integer>> newPair = Optional.empty();
 
       //if overflow
-      if ((float) numofKeys > fillFactor * 2 * d) {
+      if (numofKeys > Math.ceil(fillFactor * 2 * d)) {
           int midIdx = keys.size()-1;
           List<DataBox> newKeys = new ArrayList<>();
           newKeys.add(keys.get(midIdx));
